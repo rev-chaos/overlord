@@ -4,15 +4,14 @@ use std::task::{Context, Poll};
 use derive_more::Display;
 use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::stream::Stream;
-use log::{debug, info};
 use moodyblues_sdk::trace;
 
 use crate::smr::smr_types::{
     FromWhere, Lock, SMREvent, SMRStatus, SMRTrigger, Step, TriggerSource, TriggerType,
 };
 use crate::wal::SMRBase;
+use crate::{debug, info, ConsensusResult, INIT_HEIGHT, INIT_ROUND};
 use crate::{error::ConsensusError, smr::Event, types::Hash};
-use crate::{ConsensusResult, INIT_HEIGHT, INIT_ROUND};
 
 /// A smallest implementation of an atomic overlord state machine. It
 #[derive(Debug, Display)]
@@ -104,10 +103,7 @@ impl StateMachine {
         if height != self.height || round != self.round {
             Ok(())
         } else {
-            info!(
-                "Overlord: SMR brake timeout height {}, round {}",
-                self.height, round
-            );
+            info!("SMR brake timeout height {}, round {}", self.height, round);
             self.throw_event(SMREvent::Brake {
                 height,
                 round,
@@ -123,7 +119,7 @@ impl StateMachine {
             return Ok(());
         }
 
-        info!("Overlord: SMR continue round {}", round);
+        info!("SMR continue round {}", round);
 
         self.round = round - 1;
         let (lock_round, lock_proposal) = self
@@ -161,7 +157,7 @@ impl StateMachine {
         status: SMRStatus,
         source: TriggerSource,
     ) -> ConsensusResult<()> {
-        info!("Overlord: SMR triggered by new height {}", status.height);
+        info!("SMR triggered by new height {}", status.height);
 
         let height = status.height;
         if source != TriggerSource::State {
@@ -205,7 +201,7 @@ impl StateMachine {
         }
 
         info!(
-            "Overlord: SMR triggered by a proposal hash {:?}, from {:?}, height {}, round {}",
+            "SMR triggered by a proposal hash {:?}, from {:?}, height {}, round {}",
             hex::encode(proposal_hash.clone()),
             source,
             self.height,
@@ -237,7 +233,7 @@ impl StateMachine {
         self.check()?;
         if let Some(lock_round) = lock_round {
             if let Some(lock) = self.lock.clone() {
-                debug!("Overlord: SMR handle proposal with a lock");
+                debug!("SMR handle proposal with a lock");
 
                 if lock_round > lock.round {
                     self.remove_polc();
@@ -292,7 +288,7 @@ impl StateMachine {
         }
 
         info!(
-            "Overlord: SMR triggered by prevote QC hash {:?} from {:?}, height {}, round {}",
+            "SMR triggered by prevote QC hash {:?} from {:?}, height {}, round {}",
             hex::encode(prevote_hash.clone()),
             source,
             self.height,
@@ -387,7 +383,7 @@ impl StateMachine {
         }
 
         info!(
-            "Overlord: SMR triggered by precommit QC hash {:?}, from {:?}, height {}, round {}",
+            "SMR triggered by precommit QC hash {:?}, from {:?}, height {}, round {}",
             hex::encode(precommit_hash.clone()),
             source,
             self.height,
@@ -405,7 +401,7 @@ impl StateMachine {
             }
 
             info!(
-                "Overlord: SMR goto brake step, height {}, round {}",
+                "SMR goto brake step, height {}, round {}",
                 self.height, self.round
             );
             self.goto_step(Step::Brake);
@@ -438,7 +434,7 @@ impl StateMachine {
     }
 
     fn throw_event(&mut self, event: SMREvent) -> ConsensusResult<()> {
-        info!("Overlord: SMR throw {:?} event", event);
+        info!("SMR throw {:?} event", event);
         self.event.0.unbounded_send(event.clone()).map_err(|err| {
             ConsensusError::ThrowEventErr(format!("event: {}, error: {:?}", event.clone(), err))
         })?;
@@ -457,7 +453,7 @@ impl StateMachine {
 
     /// Goto new height and clear everything.
     fn goto_new_height(&mut self, height: u64) {
-        info!("Overlord: SMR goto new height: {}", height);
+        info!("SMR goto new height: {}", height);
         self.height = height;
         self.round = INIT_ROUND;
         trace::start_step((Step::Propose).to_string(), self.round, height);
@@ -468,7 +464,7 @@ impl StateMachine {
 
     /// Keep the lock, if any, when go to the next round.
     fn goto_next_round(&mut self) {
-        info!("Overlord: SMR goto next round {}", self.round + 1);
+        info!("SMR goto next round {}", self.round + 1);
         self.round += 1;
         self.goto_step(Step::Propose);
     }
@@ -515,7 +511,7 @@ impl StateMachine {
     /// Goto the given step.
     #[inline]
     fn goto_step(&mut self, step: Step) {
-        debug!("Overlord: SMR goto step {:?}", step);
+        debug!("SMR goto step {:?}", step);
         trace::start_step(step.clone().to_string(), self.round, self.height);
         self.step = step;
     }
@@ -524,7 +520,7 @@ impl StateMachine {
     /// the hash is empty, remove it. Otherwise, set lock round and hash as the given round and
     /// hash.
     fn update_polc(&mut self, hash: Hash, round: u64) {
-        debug!("Overlord: SMR update PoLC at round {}", round);
+        debug!("SMR update PoLC at round {}", round);
         self.set_proposal(hash.clone());
 
         if hash.is_empty() {
@@ -552,7 +548,7 @@ impl StateMachine {
     /// 4. If the step is propose, proposal hash must be empty unless lock is some.
     #[inline(always)]
     fn check(&mut self) -> ConsensusResult<()> {
-        debug!("Overlord: SMR do self check");
+        debug!("SMR do self check");
 
         // // Lock hash must be same as proposal hash, if has.
         // if self.round == 0

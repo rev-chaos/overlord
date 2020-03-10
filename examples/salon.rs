@@ -257,6 +257,7 @@ impl Speaker {
             Arc::clone(&brain),
             Arc::new(crypto),
             Arc::new(MockWal::new()),
+            "example",
         );
         let overlord_handler = overlord.get_handler();
 

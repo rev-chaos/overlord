@@ -10,6 +10,8 @@
 mod codec;
 /// Overlord error module.
 pub mod error;
+///
+mod r#macro;
 /// Create and run the overlord consensus process.
 pub mod overlord;
 /// serialize Bytes in hex format
@@ -40,6 +42,8 @@ use std::fmt::Debug;
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use lazy_static::lazy_static;
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ConsensusError;
@@ -50,6 +54,11 @@ pub type ConsensusResult<T> = ::std::result::Result<T, ConsensusError>;
 
 const INIT_HEIGHT: u64 = 0;
 const INIT_ROUND: u64 = 0;
+
+lazy_static! {
+    /// Log prefix of Overlord which can be costumed in Overlord::new()
+    pub static ref LOG_PREFIX: RwLock<String> = RwLock::new(String::from("Overlord: "));
+}
 
 /// Trait for some functions that consensus needs.
 #[async_trait]

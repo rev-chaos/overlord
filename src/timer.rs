@@ -7,13 +7,12 @@ use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::stream::{Stream, StreamExt};
 use futures::{FutureExt, SinkExt};
 use futures_timer::Delay;
-use log::{debug, error, info};
 
 use crate::smr::smr_types::{SMREvent, SMRTrigger, TriggerSource, TriggerType};
 use crate::smr::{Event, SMRHandler};
 use crate::DurationConfig;
+use crate::{debug, error, info, types::Hash, utils::timer_config::TimerConfig};
 use crate::{error::ConsensusError, ConsensusResult, INIT_HEIGHT, INIT_ROUND};
-use crate::{types::Hash, utils::timer_config::TimerConfig};
 
 const MAX_TIMEOUT_COEF: u32 = 5;
 
@@ -109,7 +108,7 @@ impl Timer {
     pub fn run(mut self) {
         tokio::spawn(async move {
             while let Some(err) = self.next().await {
-                error!("Overlord: timer error {:?}", err);
+                error!("timer error {:?}", err);
             }
         });
     }
@@ -150,7 +149,7 @@ impl Timer {
             interval *= 2u32.pow(coef);
         }
 
-        info!("Overlord: timer set {:?} timer", event);
+        info!("timer set {:?} timer", event);
         let smr_timer = TimeoutInfo::new(interval, event, self.sender.clone());
 
         tokio::spawn(async move {
@@ -197,7 +196,7 @@ impl Timer {
             _ => return Err(ConsensusError::TimerErr("No commit timer".to_string())),
         };
 
-        debug!("Overlord: timer {:?} time out", event);
+        debug!("timer {:?} time out", event);
 
         self.state_machine.trigger(SMRTrigger {
             source: TriggerSource::Timer,

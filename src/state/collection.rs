@@ -505,14 +505,9 @@ impl ChokeCollector {
                 .iter()
                 .map(|sc| hex::encode(sc.address.clone()))
                 .collect::<Vec<_>>();
-            log::info!(
-                "Overlord: {} chokes in round {}, voters {:?}",
-                num,
-                round,
-                voters
-            );
+            log::info!("{} chokes in round {}, voters {:?}", num, round, voters);
         } else {
-            log::info!("Overlord: no choke in round {}", round);
+            log::info!("no choke in round {}", round);
         }
     }
 

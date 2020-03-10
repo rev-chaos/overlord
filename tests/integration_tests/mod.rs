@@ -6,6 +6,7 @@ mod wal;
 
 // use std::fs;
 
+use log::LevelFilter;
 use run::run_test;
 use wal::Record;
 
@@ -13,7 +14,11 @@ const TEST_CASE_DIR: &str = "./tests/integration_tests/test_case/";
 
 #[tokio::test(threaded_scheduler)]
 async fn test_1_wal() {
-    run_test(Record::new(1, 1), 1, 10).await
+    let _ = env_logger::builder()
+        .filter_level(LevelFilter::Error)
+        .is_test(true)
+        .try_init();
+    run_test(Record::new(1, 1), 1, 1).await
 }
 
 #[tokio::test(threaded_scheduler)]
@@ -23,7 +28,10 @@ async fn test_3_wal() {
 
 #[tokio::test(threaded_scheduler)]
 async fn test_4_wal() {
-    let _ = env_logger::builder().is_test(true).try_init();
+    let _ = env_logger::builder()
+        .filter_level(LevelFilter::Error)
+        .is_test(true)
+        .try_init();
     run_test(Record::new(4, 1), 1, 10).await
 }
 

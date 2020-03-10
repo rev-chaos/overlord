@@ -11,12 +11,11 @@ use std::task::{Context, Poll};
 
 use futures::channel::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::stream::{FusedStream, Stream, StreamExt};
-use log::error;
 
 use crate::smr::smr_types::{SMREvent, SMRStatus, SMRTrigger, TriggerSource, TriggerType};
 use crate::smr::state_machine::StateMachine;
 use crate::types::Hash;
-use crate::{error::ConsensusError, ConsensusResult};
+use crate::{error, error::ConsensusError, ConsensusResult};
 
 ///
 #[derive(Debug)]
@@ -51,7 +50,7 @@ impl SMR {
             loop {
                 let res = self.state_machine.next().await;
                 if let Some(Err(err)) = res {
-                    error!("Overlord: SMR error {:?}", err);
+                    error!("SMR error {:?}", err);
                 } else if res.is_none() {
                     break;
                 }

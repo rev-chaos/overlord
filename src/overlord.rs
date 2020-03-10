@@ -8,8 +8,8 @@ use crate::error::ConsensusError;
 use crate::state::process::State;
 use crate::types::{Address, Node, OverlordMsg};
 use crate::DurationConfig;
+use crate::{info, Codec, Consensus, ConsensusResult, Crypto, Wal, LOG_PREFIX};
 use crate::{smr::SMR, timer::Timer};
-use crate::{Codec, Consensus, ConsensusResult, Crypto, Wal};
 
 type Pile<T> = RwLock<Option<T>>;
 
@@ -31,7 +31,15 @@ where
     W: Wal + 'static,
 {
     /// Create a new overlord and return an overlord instance with an unbounded receiver.
-    pub fn new(address: Address, consensus: Arc<F>, crypto: Arc<C>, wal: Arc<W>) -> Self {
+    pub fn new(
+        address: Address,
+        consensus: Arc<F>,
+        crypto: Arc<C>,
+        wal: Arc<W>,
+        log_prefix: &str,
+    ) -> Self {
+        *LOG_PREFIX.write() = String::from(log_prefix);
+
         let (tx, rx) = unbounded();
         Overlord {
             sender:    RwLock::new(Some(tx)),
@@ -91,7 +99,7 @@ where
             (tmp_rx, tmp_state, tmp_resp)
         };
 
-        log::info!("Overlord start running");
+        info!("start running");
 
         // Run SMR.
         smr_provider.run();

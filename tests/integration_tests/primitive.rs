@@ -200,6 +200,7 @@ impl Participant {
             Arc::clone(&adapter),
             Arc::new(crypto),
             Arc::new(records.wal_record.get(address).unwrap().clone()),
+            &*hex::encode(address),
         );
         let overlord_handler = overlord.get_handler();
 
