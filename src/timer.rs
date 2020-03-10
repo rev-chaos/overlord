@@ -11,8 +11,12 @@ use futures_timer::Delay;
 use crate::smr::smr_types::{SMREvent, SMRTrigger, TriggerSource, TriggerType};
 use crate::smr::{Event, SMRHandler};
 use crate::DurationConfig;
-use crate::{debug, error, info, types::Hash, utils::timer_config::TimerConfig};
+#[cfg(feature = "log_prefix")]
+use crate::{debug, error, info};
 use crate::{error::ConsensusError, ConsensusResult, INIT_HEIGHT, INIT_ROUND};
+use crate::{types::Hash, utils::timer_config::TimerConfig};
+#[cfg(not(feature = "log_prefix"))]
+use log::{debug, error, info};
 
 const MAX_TIMEOUT_COEF: u32 = 5;
 

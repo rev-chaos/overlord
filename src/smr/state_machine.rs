@@ -10,8 +10,12 @@ use crate::smr::smr_types::{
     FromWhere, Lock, SMREvent, SMRStatus, SMRTrigger, Step, TriggerSource, TriggerType,
 };
 use crate::wal::SMRBase;
-use crate::{debug, info, ConsensusResult, INIT_HEIGHT, INIT_ROUND};
+#[cfg(feature = "log_prefix")]
+use crate::{debug, info};
 use crate::{error::ConsensusError, smr::Event, types::Hash};
+use crate::{ConsensusResult, INIT_HEIGHT, INIT_ROUND};
+#[cfg(not(feature = "log_prefix"))]
+use log::{debug, info};
 
 /// A smallest implementation of an atomic overlord state machine. It
 #[derive(Debug, Display)]

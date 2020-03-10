@@ -33,12 +33,3 @@ macro_rules! debug {
         log::debug!("{} {}", crate::LOG_PREFIX.read(), fmt);
     )
 }
-
-/// error with prefix
-#[macro_export]
-macro_rules! trace {
-    ($($arg:tt)+) => (
-        let fmt = format!($($arg)+);
-        log::trace!("{} {}", crate::LOG_PREFIX.read(), fmt);
-    )
-}

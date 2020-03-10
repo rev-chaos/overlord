@@ -8,8 +8,12 @@ use crate::error::ConsensusError;
 use crate::state::process::State;
 use crate::types::{Address, Node, OverlordMsg};
 use crate::DurationConfig;
-use crate::{info, Codec, Consensus, ConsensusResult, Crypto, Wal, LOG_PREFIX};
+#[cfg(feature = "log_prefix")]
+use crate::{info, LOG_PREFIX};
 use crate::{smr::SMR, timer::Timer};
+use crate::{Codec, Consensus, ConsensusResult, Crypto, Wal};
+#[cfg(not(feature = "log_prefix"))]
+use log::info;
 
 type Pile<T> = RwLock<Option<T>>;
 
@@ -36,9 +40,12 @@ where
         consensus: Arc<F>,
         crypto: Arc<C>,
         wal: Arc<W>,
-        log_prefix: &str,
+        #[cfg(feature = "log_prefix")] log_prefix: &str,
     ) -> Self {
-        *LOG_PREFIX.write() = String::from(log_prefix);
+        #[cfg(feature = "log_prefix")]
+        {
+            *LOG_PREFIX.write() = String::from(log_prefix);
+        }
 
         let (tx, rx) = unbounded();
         Overlord {

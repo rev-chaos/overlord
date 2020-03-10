@@ -70,22 +70,3 @@ pub fn to_hex_strings(nodes: &[Node]) -> Vec<String> {
 pub fn to_hex(address: &Bytes) -> String {
     hex::encode(address)
 }
-
-pub fn get_index_array(nodes: &[Node], alives: &[Node]) -> Vec<usize> {
-    nodes
-        .iter()
-        .enumerate()
-        .filter(|(_, node)| alives.contains(node))
-        .map(|(i, _)| i)
-        .collect()
-}
-
-pub fn get_index(nodes: &[Node], address: &Bytes) -> usize {
-    let mut index = std::usize::MAX;
-    nodes.iter().enumerate().for_each(|(i, node)| {
-        if node.address == address {
-            index = i;
-        }
-    });
-    index
-}

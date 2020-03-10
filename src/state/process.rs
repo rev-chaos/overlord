@@ -26,10 +26,11 @@ use crate::types::{
 };
 use crate::utils::auth_manage::AuthorityManage;
 use crate::wal::{WalInfo, WalLock};
-use crate::{
-    debug, error, info, warn, Codec, Consensus, ConsensusResult, Crypto, Wal, INIT_HEIGHT,
-    INIT_ROUND,
-};
+#[cfg(feature = "log_prefix")]
+use crate::{debug, error, info, warn};
+use crate::{Codec, Consensus, ConsensusResult, Crypto, Wal, INIT_HEIGHT, INIT_ROUND};
+#[cfg(not(feature = "log_prefix"))]
+use log::{debug, error, info, warn};
 
 const FUTURE_HEIGHT_GAP: u64 = 5;
 const FUTURE_ROUND_GAP: u64 = 10;
