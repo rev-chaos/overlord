@@ -62,6 +62,7 @@ impl AuthorityManage {
 
     /// Get the proposer address by a given seed.
     pub fn get_proposer(&self, height: u64, round: u64) -> ConsensusResult<Address> {
+        println!("######### get_proposal");
         let index = if cfg!(features = "random_leader") {
             println!("######### gen_random_proposal");
             get_random_proposer_index(
@@ -70,6 +71,7 @@ impl AuthorityManage {
                 self.propose_weight_sum,
             )
         } else {
+            println!("######### get_cycle_proposal");
             let len = self.address.len();
             let prime_num = *get_primes_less_than_x(len as u32).last().unwrap_or(&1) as u64;
             let res = (height * prime_num + round) % (len as u64);
@@ -77,7 +79,7 @@ impl AuthorityManage {
         };
 
         if let Some(addr) = self.address.get(index) {
-            println!("########## leader is {:?} in h {}, r: {}", addr, height, round);
+            println!("########## leader index {} in h {}, r: {}", index, height, round);
             return Ok(addr.to_owned());
         }
         Err(ConsensusError::Other(
