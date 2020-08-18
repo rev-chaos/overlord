@@ -386,11 +386,11 @@ where
     /// interval. Since it is possible to have received and cached the current height's proposals,
     /// votes and quorum certificates before, these should be re-checked as goto new height.
     /// Finally, trigger SMR to goto new height.
-    async fn goto_new_height(&mut self, _ctx: Context, status: Status) -> ConsensusResult<()> {
+    async fn goto_new_height(&mut self, ctx: Context, status: Status) -> ConsensusResult<()> {
         if status.height <= self.height {
             warn!(
-                "Overlord: state receive an outdated status, height {}, self height {}",
-                status.height, self.height
+                "Overlord: state receive an outdated status, height {}, self height {}, ctx {:?}",
+                status.height, self.height, ctx
             );
             return Ok(());
         }
@@ -580,11 +580,12 @@ where
         let proposal_round = signed_proposal.proposal.round;
 
         info!(
-            "Overlord: state receive a signed proposal height {}, round {}, from {:?}, hash {:?}",
+            "Overlord: state receive a signed proposal height {}, round {}, from {:?}, hash {:?}, ctx: {:?}",
             proposal_height,
             proposal_round,
             hex::encode(signed_proposal.proposal.proposer.clone()),
-            hex::encode(signed_proposal.proposal.block_hash.clone())
+            hex::encode(signed_proposal.proposal.block_hash.clone()),
+            ctx,
         );
 
         // Verify proposer before filter proposal.
@@ -842,12 +843,13 @@ where
         };
 
         info!(
-            "Overlord: state receive a signed {:?} vote height {}, round {}, from {:?}, hash {:?}",
+            "Overlord: state receive a signed {:?} vote height {}, round {}, from {:?}, hash {:?}, ctx {:?}",
             vote_type,
             height,
             round,
             hex::encode(signed_vote.voter.clone()),
-            hex::encode(signed_vote.vote.block_hash.clone())
+            hex::encode(signed_vote.vote.block_hash.clone()),
+            ctx,
         );
 
         if self.filter_message(height, round) {
@@ -977,12 +979,13 @@ where
         };
 
         info!(
-            "Overlord: state receive an {:?} QC height {}, round {}, from {:?}, hash {:?}",
+            "Overlord: state receive an {:?} QC height {}, round {}, from {:?}, hash {:?}, ctx {:?}",
             qc_type,
             vote_height,
             vote_round,
             hex::encode(aggregated_vote.leader.clone()),
-            hex::encode(aggregated_vote.block_hash.clone())
+            hex::encode(aggregated_vote.block_hash.clone()),
+            ctx,
         );
 
         // If the vote height is lower than the current height, ignore it directly. If the vote
@@ -1180,10 +1183,11 @@ where
         }
 
         info!(
-            "Overlord: state receive a choke of height {}, round {}, from {:?}",
+            "Overlord: state receive a choke of height {}, round {}, from {:?}, ctx {:?}",
             choke_height,
             choke_round,
-            hex::encode(signed_choke.address.clone())
+            hex::encode(signed_choke.address.clone()),
+            ctx,
         );
 
         if choke_round > self.round {
